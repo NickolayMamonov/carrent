@@ -5,25 +5,15 @@ export interface Car {
     year: number;
     pricePerDay: number;
     type: string;
-    images: string[];
     features: string[];
     availability: boolean;
-    description?: string;
-    specifications?: {
-        transmission?: string;
-        fuelType?: string;
-        seats?: number;
-        luggage?: number;
-        mileage?: string;
+    image: string;
+    description: string;
+    specifications: {
+        transmission: string;
+        fuelType: string;
+        seats: number;
+        luggage: number;
+        mileage: string;
     };
-}
-
-export interface CarFilter {
-    priceRange?: {
-        min: number;
-        max: number;
-    };
-    types?: string[];
-    features?: string[];
-    availability?: boolean;
 }

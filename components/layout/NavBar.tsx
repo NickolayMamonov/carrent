@@ -9,19 +9,19 @@ import { useState } from "react";
 
 const NavItems = [
     {
-        label: 'Find a Car',
+        label: 'Поиск автомобиля',
         href: '/cars',
     },
     {
-        label: 'How It Works',
+        label: 'Как это работает',
         href: '/how-it-works',
     },
     {
-        label: 'About',
+        label: 'О нас',
         href: '/about',
     },
     {
-        label: 'Contact',
+        label: 'Контакты',
         href: '/contact',
     },
 ];
@@ -80,7 +80,7 @@ const NavBar = () => {
                                     variant="outline"
                                     className="text-base px-6 py-2 h-11" // Увеличены кнопки
                                 >
-                                    My Rentals
+                                    Мои аренды
                                 </Button>
                             </Link>
                             <UserButton
