@@ -1,9 +1,9 @@
+// app/cars/page.tsx
 import { CarsContainer } from "@/components/cars/CarsContainer";
 
 export default function CarsPage() {
     return (
         <div className="space-y-8 py-6">
-            {/* Hero Section */}
             <div className="space-y-4">
                 <h1 className="text-4xl font-bold">Найдите свой идеальный автомобиль</h1>
                 <p className="text-lg text-muted-foreground">
@@ -11,7 +11,6 @@ export default function CarsPage() {
                 </p>
             </div>
 
-            {/* Cars Container with filters and grid */}
             <CarsContainer />
         </div>
     );

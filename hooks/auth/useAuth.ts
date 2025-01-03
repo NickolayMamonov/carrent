@@ -1,11 +1,16 @@
+// hooks/auth/useAuth.ts
 import { useAuthStore } from '@/auth/useAuthStore';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export const useAuth = () => {
     const { user, setUser, isAuthenticated, isAdmin, isEditor } = useAuthStore();
+    const checkingRef = useRef(false);
 
     useEffect(() => {
         const checkAuth = async () => {
+            if (checkingRef.current) return;
+            checkingRef.current = true;
+
             try {
                 const response = await fetch('/api/auth/me');
                 if (response.ok) {
@@ -16,10 +21,12 @@ export const useAuth = () => {
                 }
             } catch (error) {
                 setUser(null);
+            } finally {
+                checkingRef.current = false;
             }
         };
 
-        if (!user) {
+        if (!user && !checkingRef.current) {
             checkAuth();
         }
     }, [user, setUser]);

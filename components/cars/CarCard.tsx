@@ -1,11 +1,12 @@
+// components/cars/CarCard.tsx
 import React from 'react';
-import { Car } from "lucide-react";
+import { Car as CarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Car as CarType } from '@/lib/types/car';
+import type { Car } from '@/lib/types/car';
 import { formatPrice } from '@/lib/utils/format';
 
 interface CarCardProps {
-    car: CarType;
+    car: Car;
 }
 
 export const CarCard: React.FC<CarCardProps> = ({ car }) => {
@@ -20,7 +21,7 @@ export const CarCard: React.FC<CarCardProps> = ({ car }) => {
                     />
                 ) : (
                     <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                        <Car className="h-12 w-12" />
+                        <CarIcon className="h-12 w-12" />
                     </div>
                 )}
             </div>
@@ -35,8 +36,8 @@ export const CarCard: React.FC<CarCardProps> = ({ car }) => {
                             key={feature}
                             className="px-2 py-1 text-xs rounded-full bg-secondary"
                         >
-              {feature}
-            </span>
+                            {feature}
+                        </span>
                     ))}
                 </div>
                 <div className="flex items-center justify-between">

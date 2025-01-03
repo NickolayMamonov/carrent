@@ -1,3 +1,4 @@
+// app/api/bookings/create/route.ts
 import { getAuthUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
@@ -11,7 +12,19 @@ export async function POST(request: Request) {
 
         const { carId, startDate, endDate, extras, totalPrice } = await request.json();
 
-        // Проверяем доступность автомобиля на выбранные даты
+        // Проверяем, существует ли автомобиль
+        const car = await prisma.car.findUnique({
+            where: { id: carId }
+        });
+
+        if (!car) {
+            return NextResponse.json(
+                { error: 'Автомобиль не найден' },
+                { status: 404 }
+            );
+        }
+
+        // Проверяем, не забронирован ли автомобиль на эти даты
         const existingBooking = await prisma.booking.findFirst({
             where: {
                 carId,
@@ -35,28 +48,44 @@ export async function POST(request: Request) {
 
         if (existingBooking) {
             return NextResponse.json(
-                { error: 'Автомобиль недоступен на выбранные даты' },
+                { error: 'Автомобиль уже забронирован на выбранные даты' },
                 { status: 400 }
             );
         }
 
-        // Создаем бронирование с дополнительными услугами
-        const booking = await prisma.booking.create({
-            data: {
-                carId,
-                userId: user.id,
-                startDate: new Date(startDate),
-                endDate: new Date(endDate),
-                totalPrice,
-                status: 'PENDING',
-                extras: {
-                    create: extras
+        // Создаем бронирование
+        const booking = await prisma.$transaction(async (prisma) => {
+            // Создаем основную запись бронирования
+            const newBooking = await prisma.booking.create({
+                data: {
+                    carId,
+                    userId: user.id,
+                    startDate: new Date(startDate),
+                    endDate: new Date(endDate),
+                    totalPrice,
+                    status: 'PENDING'
                 }
-            },
-            include: {
-                car: true,
-                extras: true
-            }
+            });
+
+            // Создаем запись о дополнительных услугах
+            await prisma.bookingExtras.create({
+                data: {
+                    bookingId: newBooking.id,
+                    insurance: extras.insurance || false,
+                    gps: extras.gps || false,
+                    childSeat: extras.childSeat || false,
+                    additionalDriver: extras.additionalDriver || false
+                }
+            });
+
+            // Возвращаем бронирование со всеми связанными данными
+            return prisma.booking.findUnique({
+                where: { id: newBooking.id },
+                include: {
+                    car: true,
+                    extras: true
+                }
+            });
         });
 
         return NextResponse.json({ booking });

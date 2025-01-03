@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { CarFront, Calendar, CheckCircle, XCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState, useCallback } from 'react';
+import { CarFront, Calendar } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 interface Booking {
     id: string;
@@ -29,24 +29,28 @@ const statusMap = {
 export default function DashboardPage() {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchBookings = useCallback(async () => {
+        if (!loading) return;
+
+        try {
+            const response = await fetch('/api/bookings/user');
+            if (response.ok) {
+                const data = await response.json();
+                setBookings(data.bookings);
+            }
+        } catch (error) {
+            setError('Ошибка при загрузке бронирований');
+            console.error('Error fetching bookings:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [loading]);
 
     useEffect(() => {
-        const fetchBookings = async () => {
-            try {
-                const response = await fetch('/api/bookings/user');
-                if (response.ok) {
-                    const data = await response.json();
-                    setBookings(data.bookings);
-                }
-            } catch (error) {
-                console.error('Error fetching bookings:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchBookings();
-    }, []);
+    }, [fetchBookings]);
 
     const handleCancelBooking = async (bookingId: string) => {
         try {

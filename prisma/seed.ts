@@ -1,3 +1,4 @@
+// prisma/seed.ts
 import { PrismaClient } from '@prisma/client'
 import * as bcrypt from 'bcryptjs'
 
@@ -5,13 +6,12 @@ const prisma = new PrismaClient()
 
 async function main() {
     // Очистка существующих данных
+    await prisma.car.deleteMany()
     await prisma.user.deleteMany()
 
-    // Создание тестовых пользователей
-    const hashedPassword = await bcrypt.hash('password123', 10)
-
-    // Администратор
-    await prisma.user.create({
+    // Создание админа
+    const hashedPassword = await bcrypt.hash('admin123', 10)
+    const admin = await prisma.user.create({
         data: {
             email: 'admin@example.com',
             password: hashedPassword,
@@ -22,28 +22,55 @@ async function main() {
         },
     })
 
-    // Редактор
-    await prisma.user.create({
+    // Создание автомобилей
+    await prisma.car.create({
         data: {
-            email: 'editor@example.com',
-            password: hashedPassword,
-            firstName: 'Editor',
-            lastName: 'User',
-            role: 'EDITOR',
-            isVerified: true,
-        },
+            id: 'camry-2023',
+            make: 'Toyota',
+            model: 'Camry',
+            year: 2023,
+            pricePerDay: 4500,
+            type: 'Седан',
+            features: ['Автомат', 'Климат-контроль', 'Круиз-контроль', 'Подогрев сидений'],
+            images: ['/vehicles/toyota-camry.png'],
+            availability: true,
+            description: 'Toyota Camry - это комфортабельный седан бизнес-класса',
+            createdBy: admin.id,
+            lastModifiedBy: admin.id,
+            specifications: {
+                create: {
+                    transmission: 'Автоматическая',
+                    fuelType: 'Бензин',
+                    seats: 5,
+                    luggage: 480
+                }
+            }
+        }
     })
 
-    // Обычный пользователь
-    await prisma.user.create({
+    await prisma.car.create({
         data: {
-            email: 'user@example.com',
-            password: hashedPassword,
-            firstName: 'Regular',
-            lastName: 'User',
-            role: 'USER',
-            isVerified: true,
-        },
+            id: 'bmw-x5-2023',
+            make: 'BMW',
+            model: 'X5',
+            year: 2023,
+            pricePerDay: 11000,
+            type: 'Кроссовер',
+            features: ['Полный привод', 'Кожаный салон', 'Панорамная крыша', 'Автопилот'],
+            images: ['/vehicles/bmw-x5.png'],
+            availability: true,
+            description: 'BMW X5 - роскошный среднеразмерный кроссовер',
+            createdBy: admin.id,
+            lastModifiedBy: admin.id,
+            specifications: {
+                create: {
+                    transmission: 'Автоматическая',
+                    fuelType: 'Бензин',
+                    seats: 5,
+                    luggage: 650
+                }
+            }
+        }
     })
 
     console.log('Seed data created successfully!')
