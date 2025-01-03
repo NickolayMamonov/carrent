@@ -1,5 +1,4 @@
-import {ClerkProvider} from "@clerk/nextjs";
-import type {Metadata} from "next";
+import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import NavBar from "@/components/layout/NavBar";
@@ -10,6 +9,7 @@ const geistSans = localFont({
     variable: "--font-geist-sans",
     weight: "100 900",
 });
+
 const geistMono = localFont({
     src: "./fonts/GeistMonoVF.woff",
     variable: "--font-geist-mono",
@@ -22,23 +22,19 @@ export const metadata: Metadata = {
     icons: {icon: '/logo.svg'}
 };
 
-export default function RootLayout({children,}: Readonly<{
-    children: React.ReactNode;
-}>) {
+export default function RootLayout({children}: {children: React.ReactNode}) {
     return (
-        <ClerkProvider>
-            <html lang="en" suppressHydrationWarning>
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-            <main className="flex flex-col min-h-screen bg-secondary">
-                <NavBar/>
-                <section className="flex-grow">
-                    <Container>
-                        {children}
-                    </Container>
-                </section>
-            </main>
-            </body>
-            </html>
-        </ClerkProvider>
+        <html lang="en" suppressHydrationWarning>
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <main className="flex flex-col min-h-screen bg-secondary">
+            <NavBar/>
+            <section className="flex-grow">
+                <Container>
+                    {children}
+                </Container>
+            </section>
+        </main>
+        </body>
+        </html>
     );
 }
