@@ -20,6 +20,7 @@ model User {
   role          UserRole  @default(USER)
   firstName     String
   lastName      String
+  avatar        String?
   isVerified    Boolean   @default(false)
   verificationToken String? @unique
   resetPasswordToken String? @unique

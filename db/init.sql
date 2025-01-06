@@ -135,7 +135,7 @@ CREATE INDEX "Booking_dates_idx" ON "Booking" ("startDate", "endDate");
 CREATE INDEX "Maintenance_carId_idx" ON "Maintenance" ("carId");
 CREATE INDEX "Maintenance_date_idx" ON "Maintenance" (date);
 
--- Insert admin user
+-- Insert admin user.ts
 INSERT INTO "User" (id,
                     email,
                     password,

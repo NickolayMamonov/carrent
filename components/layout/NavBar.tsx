@@ -1,12 +1,11 @@
-// components/layout/NavBar.tsx
-'use client'
+'use client';
 
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useLogout } from '@/hooks/auth/useLogout';
 import Container from "@/components/Container";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Car, Menu, X, Settings, Users, FileEdit, LucideIcon } from "lucide-react";
+import { Car, Menu, X, Users, FileEdit, LucideIcon, User, CalendarRange } from "lucide-react";
 import { useState } from "react";
 
 interface NavItem {
@@ -15,8 +14,8 @@ interface NavItem {
     icon?: LucideIcon;
 }
 
-// Базовые пункты меню для всех пользователей
-const publicNavItems: NavItem[] = [
+// Базовые пункты меню для неавторизованных пользователей
+const baseNavItems: NavItem[] = [
     {
         label: 'Поиск автомобиля',
         href: '/cars',
@@ -35,7 +34,7 @@ const publicNavItems: NavItem[] = [
     },
 ];
 
-// Пункты меню для авторизованных пользователей
+// Пункты меню для авторизованного пользователя
 const userNavItems: NavItem[] = [
     {
         label: 'Мои бронирования',
@@ -47,27 +46,27 @@ const userNavItems: NavItem[] = [
     },
 ];
 
-// Пункты меню для редакторов
+// Пункты меню для редактора
 const editorNavItems: NavItem[] = [
     {
         label: 'Управление автомобилями',
         href: '/editor/cars',
         icon: FileEdit,
     },
+    {
+        label: 'Управление бронированиями',
+        href: '/editor/bookings',
+        icon: CalendarRange,
+    }
 ];
 
-// Пункты меню для администраторов
+// Пункты меню для администратора
 const adminNavItems: NavItem[] = [
-    {
-        label: 'Панель администратора',
-        href: '/admin',
-        icon: Settings,
-    },
     {
         label: 'Управление пользователями',
         href: '/admin/users',
         icon: Users,
-    },
+    }
 ];
 
 const NavBar = () => {
@@ -75,23 +74,95 @@ const NavBar = () => {
     const { user } = useAuth();
     const { logout, loading: logoutLoading } = useLogout();
 
-    // Получаем соответствующие пункты меню в зависимости от роли
     const getNavItems = (): NavItem[] => {
-        let items = [...publicNavItems];
-
-        if (user) {
-            items = [...items, ...userNavItems];
-
-            if (user.role === 'EDITOR' || user.role === 'ADMIN') {
-                items = [...items, ...editorNavItems];
-            }
-
-            if (user.role === 'ADMIN') {
-                items = [...items, ...adminNavItems];
-            }
+        if (!user) {
+            return baseNavItems;
         }
 
-        return items;
+        if (user.role === 'ADMIN') {
+            return [
+                ...editorNavItems,
+                ...adminNavItems,
+                ...baseNavItems.slice(1),
+                userNavItems[1],
+            ];
+        }
+
+        if (user.role === 'EDITOR') {
+            return [
+                ...editorNavItems,
+                ...baseNavItems.slice(1),
+                userNavItems[1],
+            ];
+        }
+
+        return [...baseNavItems, ...userNavItems];
+    };
+
+    const renderUserInfo = () => {
+        if (!user) {
+            return <></>;
+        }
+
+        return (
+            <div className="hidden sm:flex items-center gap-3">
+                <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full overflow-hidden bg-muted">
+                        {user.avatar ? (
+                            <img
+                                src={user.avatar}
+                                alt={`${user.firstName} ${user.lastName}`}
+                                className="h-full w-full object-cover"
+                            />
+                        ) : (
+                            <div className="h-full w-full flex items-center justify-center bg-primary/10">
+                                <User className="h-6 w-6 text-muted-foreground" />
+                            </div>
+                        )}
+                    </div>
+                    <div className="text-sm">
+                        <div className="font-medium">{user.firstName} {user.lastName}</div>
+                        <div className="text-muted-foreground">{user.email}</div>
+                    </div>
+                </div>
+                <Button
+                    variant="outline"
+                    className="text-base h-11"
+                    onClick={() => logout()}
+                    disabled={logoutLoading}
+                >
+                    Выйти
+                </Button>
+            </div>
+        );
+    };
+
+    const renderMobileUserInfo = () => {
+        if (!user) {
+            return <></>;
+        }
+
+        return (
+            <div className="flex items-center gap-3 px-3 py-2">
+                <div className="h-10 w-10 rounded-full overflow-hidden bg-muted">
+                    {user.avatar ? (
+                        <img
+                            src={user.avatar}
+                            alt={`${user.firstName} ${user.lastName}`}
+                            className="h-full w-full object-cover"
+                        />
+                    ) : (
+                        <div className="h-full w-full flex items-center justify-center bg-primary/10">
+                            <User className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                    )}
+                </div>
+                <div className="flex-1">
+                    <div className="font-medium">{user.firstName} {user.lastName}</div>
+                    <div className="text-muted-foreground text-sm">{user.email}</div>
+                </div>
+            </div>
+        );
     };
 
     const navItems = getNavItems();
@@ -125,40 +196,20 @@ const NavBar = () => {
                     {/* Auth Buttons */}
                     <div className="flex items-center gap-4">
                         {!user ? (
-                            // Кнопки для неавторизованных пользователей
                             <div className="hidden sm:flex items-center gap-3">
                                 <Link href="/sign-in">
-                                    <Button
-                                        variant="outline"
-                                        className="text-base px-6 py-2 h-11"
-                                    >
+                                    <Button variant="outline" className="text-base px-6 py-2 h-11">
                                         Войти
                                     </Button>
                                 </Link>
                                 <Link href="/sign-up">
-                                    <Button
-                                        className="text-base px-6 py-2 h-11"
-                                    >
+                                    <Button className="text-base px-6 py-2 h-11">
                                         Регистрация
                                     </Button>
                                 </Link>
                             </div>
                         ) : (
-                            // Элементы для авторизованных пользователей
-                            <div className="hidden sm:flex items-center gap-3">
-                                <div className="text-sm">
-                                    <div className="font-medium">{user.firstName} {user.lastName}</div>
-                                    <div className="text-muted-foreground">{user.email}</div>
-                                </div>
-                                <Button
-                                    variant="outline"
-                                    className="text-base h-11"
-                                    onClick={() => logout()}
-                                    disabled={logoutLoading}
-                                >
-                                    Выйти
-                                </Button>
-                            </div>
+                            renderUserInfo()
                         )}
 
                         {/* Mobile Menu Button */}
@@ -180,6 +231,7 @@ const NavBar = () => {
                     <div className="absolute top-20 left-0 right-0 bg-background border-b md:hidden">
                         <Container>
                             <nav className="flex flex-col py-6 gap-4">
+                                {user && renderMobileUserInfo()}
                                 {navItems.map((item) => (
                                     <Link
                                         key={item.href}
@@ -197,37 +249,22 @@ const NavBar = () => {
                                 {/* Mobile Auth Buttons */}
                                 {!user ? (
                                     <div className="flex flex-col gap-3 pt-6 border-t mt-2">
-                                        <Link
-                                            href="/sign-in"
-                                            onClick={() => setIsMenuOpen(false)}
-                                        >
-                                            <Button
-                                                variant="outline"
-                                                className="w-full text-base h-11"
-                                            >
+                                        <Link href="/sign-in" onClick={() => setIsMenuOpen(false)}>
+                                            <Button variant="outline" className="w-full text-base h-11">
                                                 Войти
                                             </Button>
                                         </Link>
-                                        <Link
-                                            href="/sign-up"
-                                            onClick={() => setIsMenuOpen(false)}
-                                        >
-                                            <Button
-                                                className="w-full text-base h-11"
-                                            >
+                                        <Link href="/sign-up" onClick={() => setIsMenuOpen(false)}>
+                                            <Button className="w-full text-base h-11">
                                                 Регистрация
                                             </Button>
                                         </Link>
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col gap-3 pt-6 border-t mt-2">
-                                        <div className="px-3">
-                                            <div className="font-medium">{user.firstName} {user.lastName}</div>
-                                            <div className="text-muted-foreground">{user.email}</div>
-                                        </div>
+                                    <div className="pt-6 border-t mt-2">
                                         <Button
                                             variant="outline"
-                                            className="text-base h-11"
+                                            className="w-full text-base h-11"
                                             onClick={() => {
                                                 logout();
                                                 setIsMenuOpen(false);
@@ -245,6 +282,6 @@ const NavBar = () => {
             </Container>
         </div>
     );
-}
+};
 
 export default NavBar;

@@ -1,35 +1,30 @@
-// hooks/auth/useAuth.ts
 import { useAuthStore } from '@/auth/useAuthStore';
-import { useEffect, useRef } from 'react';
+import { useEffect, useCallback } from 'react';
+import type { User } from '@/lib/types/user';
 
 export const useAuth = () => {
     const { user, setUser, isAuthenticated, isAdmin, isEditor } = useAuthStore();
-    const checkingRef = useRef(false);
+
+    const checkAuth = useCallback(async () => {
+        try {
+            const response = await fetch('/api/auth/me');
+            if (response.ok) {
+                const data = await response.json();
+                setUser(data.user);
+            } else {
+                setUser(null);
+            }
+        } catch (error) {
+            console.error('Auth check error:', error);
+            setUser(null);
+        }
+    }, [setUser]);
 
     useEffect(() => {
-        const checkAuth = async () => {
-            if (checkingRef.current) return;
-            checkingRef.current = true;
-
-            try {
-                const response = await fetch('/api/auth/me');
-                if (response.ok) {
-                    const data = await response.json();
-                    setUser(data.user);
-                } else {
-                    setUser(null);
-                }
-            } catch (error) {
-                setUser(null);
-            } finally {
-                checkingRef.current = false;
-            }
-        };
-
-        if (!user && !checkingRef.current) {
+        if (!user) {
             checkAuth();
         }
-    }, [user, setUser]);
+    }, [user, checkAuth]);
 
     const login = async (email: string, password: string) => {
         try {
@@ -46,10 +41,25 @@ export const useAuth = () => {
 
             const data = await response.json();
             setUser(data.user);
+            return data; // Возвращаем данные, включая пользователя
         } catch (error) {
             throw error;
         }
     };
 
-    return { user, isAuthenticated, isAdmin, isEditor, login };
+    const updateUserData = useCallback(async () => {
+        if (user) {
+            await checkAuth();
+        }
+    }, [user, checkAuth]);
+
+    return {
+        user: user as User | null,
+        setUser,
+        isAuthenticated,
+        isAdmin,
+        isEditor,
+        login,
+        updateUserData
+    };
 };

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/hooks/auth/useAuth';
@@ -12,6 +12,7 @@ export default function SignInPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { login } = useAuth();
 
     async function handleSubmit(e: React.FormEvent) {
@@ -20,8 +21,24 @@ export default function SignInPage() {
         setLoading(true);
 
         try {
-            await login(email, password);
-            router.push('/dashboard');
+            const response = await login(email, password);
+            // После успешного входа получаем роль пользователя
+            const userRole = response?.user?.role;
+
+            // Проверяем, есть ли redirectTo в URL
+            const redirectTo = searchParams.get('redirectTo');
+
+            if (redirectTo) {
+                // Если есть redirectTo, переходим по этому пути
+                router.push(redirectTo);
+            } else {
+                // Если redirectTo нет, выбираем путь в зависимости от роли
+                if (userRole === 'ADMIN' || userRole === 'EDITOR') {
+                    router.push('/editor/cars');
+                } else {
+                    router.push('/cars');
+                }
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Произошла ошибка');
         } finally {

@@ -6,14 +6,12 @@ export async function GET(
     { params }: { params: { id: string } }
 ) {
     try {
+        // Получаем все подтвержденные бронирования
         const bookings = await prisma.booking.findMany({
             where: {
                 carId: params.id,
                 status: {
-                    in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS']
-                },
-                endDate: {
-                    gte: new Date()
+                    in: ['CONFIRMED', 'IN_PROGRESS'] // Учитываем только подтвержденные и активные бронирования
                 }
             },
             select: {
@@ -22,10 +20,17 @@ export async function GET(
             }
         });
 
-        return NextResponse.json({ bookedDates: bookings });
+        // Форматируем даты для возврата
+        const bookedDates = bookings.map(booking => ({
+            startDate: booking.startDate.toISOString(),
+            endDate: booking.endDate.toISOString()
+        }));
+
+        return NextResponse.json({ bookedDates });
     } catch (error) {
+        console.error('Error fetching booked dates:', error);
         return NextResponse.json(
-            { error: 'Ошибка при получении занятых дат' },
+            { error: 'Ошибка при получении дат бронирования' },
             { status: 500 }
         );
     }
