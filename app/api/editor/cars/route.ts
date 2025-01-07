@@ -2,7 +2,8 @@ import { getAuthUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
-// Создание нового автомобиля
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
     try {
         const user = await getAuthUser();
@@ -16,15 +17,27 @@ export async function POST(request: Request) {
 
         const data = await request.json();
 
+        // Создаем автомобиль
         const car = await prisma.car.create({
             data: {
-                ...data,
+                make: data.make,
+                model: data.model,
+                year: data.year,
+                pricePerDay: data.pricePerDay,
+                type: data.type,
+                features: data.features || [],
+                images: data.images || [],
+                description: data.description || '',
                 createdBy: user.id,
                 lastModifiedBy: user.id,
-                images: data.images || [],
-                features: data.features || [],
+                availability: true,
                 specifications: {
-                    create: data.specifications
+                    create: {
+                        transmission: data.specifications.transmission,
+                        fuelType: data.specifications.fuelType,
+                        seats: data.specifications.seats,
+                        luggage: data.specifications.luggage
+                    }
                 }
             },
             include: {
@@ -41,4 +54,3 @@ export async function POST(request: Request) {
         );
     }
 }
-

@@ -1,4 +1,3 @@
-// app/api/editor/cars/[id]/route.ts
 import { getAuthUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';

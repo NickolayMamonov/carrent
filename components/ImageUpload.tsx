@@ -1,8 +1,8 @@
 'use client';
 
+import Image from 'next/image';
 import { useState } from 'react';
 import { Upload, Loader2, X } from 'lucide-react';
-import { Button } from "@/components/ui/button";
 
 interface ImageUploadProps {
     images: string[];
@@ -53,9 +53,10 @@ export function ImageUpload({ images, onChange }: ImageUploadProps) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {images.map((image, index) => (
                     <div key={index} className="relative aspect-square bg-muted rounded-lg overflow-hidden">
-                        <img
+                        <Image
                             src={image}
                             alt=""
+                            fill={true}
                             className="w-full h-full object-cover"
                         />
                         <button

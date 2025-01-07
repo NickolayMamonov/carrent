@@ -59,43 +59,30 @@ export default function CarEditorPage({ params }: { params: { id: string } }) {
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
+        const fetchCarData = async () => {
+            try {
+                const response = await fetch(`/api/cars/${params.id}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setFormData({
+                        ...data,
+                        pricePerDay: Number(data.pricePerDay)
+                    });
+                } else {
+                    router.push('/editor/cars');
+                }
+            } catch (error) {
+                console.error('Error fetching car:', error);
+                router.push('/editor/cars');
+            } finally {
+                setLoading(false);
+            }
+        };
+
         if (!isNew) {
             fetchCarData();
         }
-    }, [isNew, params.id]);
-
-    const fetchCarData = async () => {
-        try {
-            const response = await fetch(`/api/cars/${params.id}`);
-            if (response.ok) {
-                const car = await response.json();
-                setFormData({
-                    make: car.make,
-                    model: car.model,
-                    year: car.year,
-                    type: car.type,
-                    pricePerDay: Number(car.pricePerDay),
-                    features: car.features,
-                    description: car.description || '',
-                    images: car.images,
-                    specifications: {
-                        transmission: car.specifications?.transmission || null,
-                        fuelType: car.specifications?.fuelType || null,
-                        seats: car.specifications?.seats || 5,
-                        luggage: car.specifications?.luggage || 0
-                    }
-                });
-            } else {
-                console.error('Error fetching car data:', await response.text());
-                router.push('/editor/cars');
-            }
-        } catch (error) {
-            console.error('Error fetching car:', error);
-            router.push('/editor/cars');
-        } finally {
-            setLoading(false);
-        }
-    };
+    }, [isNew, params.id, router]);
 
     const handleFeatureToggle = (feature: string) => {
         setFormData(prev => ({

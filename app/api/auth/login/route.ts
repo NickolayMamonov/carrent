@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
     try {
@@ -24,21 +25,18 @@ export async function POST(request: Request) {
             );
         }
 
-        // Создаем JWT токен
         const token = jwt.sign(
             { userId: user.id, role: user.role },
             process.env.JWT_SECRET!,
             { expiresIn: '1d' }
         );
 
-        // Создаем refresh token
         const refreshToken = jwt.sign(
             { userId: user.id },
             process.env.REFRESH_TOKEN_SECRET!,
             { expiresIn: '7d' }
         );
 
-        // Сохраняем refresh token в базе
         await prisma.refreshToken.create({
             data: {
                 token: refreshToken,
@@ -47,7 +45,6 @@ export async function POST(request: Request) {
             },
         });
 
-        // Устанавливаем куки
         cookies().set('auth-token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -62,10 +59,10 @@ export async function POST(request: Request) {
             maxAge: 60 * 60 * 24 * 7, // 7 дней
         });
 
-        // Возвращаем данные пользователя без пароля
         const { password: _, ...userWithoutPassword } = user;
         return NextResponse.json({ user: userWithoutPassword });
-    } catch (error) {
+    } catch (error: unknown) {
+        console.error('Login error:', error);
         return NextResponse.json(
             { error: 'Внутренняя ошибка сервера' },
             { status: 500 }

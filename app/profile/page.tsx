@@ -4,6 +4,8 @@ import { useAuth } from '@/hooks/auth/useAuth';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { User, Camera, Loader2 } from "lucide-react";
+import Image from 'next/image';
+
 
 interface ProfileFormData {
     firstName: string;
@@ -161,9 +163,10 @@ export default function ProfilePage() {
                         <div className="relative">
                             <div className="h-32 w-32 rounded-full bg-muted overflow-hidden">
                                 {user.avatar ? (
-                                    <img
+                                    <Image
                                         src={user.avatar}
                                         alt="Profile"
+                                        fill={true}
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (

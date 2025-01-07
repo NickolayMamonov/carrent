@@ -15,11 +15,14 @@ export default function FeaturedCarsSection() {
             try {
                 const response = await fetch('/api/cars');
                 if (response.ok) {
-                    const data = await response.json();
-                    setCars(data.cars.slice(0, 4).map((car: any) => ({
+                    const { cars: fetchedCars } = await response.json() as { cars: Car[] };
+                    const formattedCars: Car[] = fetchedCars.slice(0, 4).map(car => ({
                         ...car,
-                        pricePerDay: Number(car.pricePerDay)
-                    })));
+                        pricePerDay: Number(car.pricePerDay),
+                        createdAt: new Date(car.createdAt),
+                        updatedAt: new Date(car.updatedAt)
+                    }));
+                    setCars(formattedCars);
                 }
             } catch (error) {
                 console.error('Error fetching cars:', error);

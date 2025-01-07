@@ -2,21 +2,38 @@
 
 import { CarSearch } from "./CarSearch";
 import { CarFilter } from "./CarFilter";
-import CarGrid from "./CarGrid"; // Изменен импорт на импорт по умолчанию
+import CarGrid from "./CarGrid";
 import { useCarFilters } from "@/hooks/useCarFilters";
 import { useEffect, useState } from "react";
 import { useAuth } from '@/hooks/auth/useAuth';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+import { Pagination } from "@/components/ui/pagination";
 import type { Car } from "@/lib/types/car";
+
+interface PaginationData {
+    total: number;
+    pages: number;
+    currentPage: number;
+    limit: number;
+}
 
 export const CarsContainer = () => {
     const [cars, setCars] = useState<Car[]>([]);
     const [loading, setLoading] = useState(true);
+    const [pagination, setPagination] = useState<PaginationData>({
+        total: 0,
+        pages: 1,
+        currentPage: 1,
+        limit: 9
+    });
+
     const { user } = useAuth();
     const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const router = useRouter();
     const isEditorPage = pathname.startsWith('/editor');
     const hasEditRights = user?.role === 'EDITOR' || user?.role === 'ADMIN';
 
@@ -29,25 +46,35 @@ export const CarsContainer = () => {
         filteredCars
     } = useCarFilters(cars);
 
-    useEffect(() => {
-        fetchCars();
-    }, []);
-
-    const fetchCars = async () => {
+    const fetchCars = async (page: number = 1) => {
         try {
-            const response = await fetch('/api/cars');
+            const response = await fetch(`/api/cars?page=${page}&limit=${pagination.limit}`);
             if (response.ok) {
                 const data = await response.json();
-                setCars(data.cars.map((car: any) => ({
+                setCars(data.cars.map((car: Car) => ({
                     ...car,
                     pricePerDay: Number(car.pricePerDay)
                 })));
+                setPagination(data.pagination);
             }
         } catch (error) {
             console.error('Error fetching cars:', error);
         } finally {
             setLoading(false);
         }
+    };
+
+    useEffect(() => {
+        const page = parseInt(searchParams.get('page') || '1');
+        fetchCars(page);
+    }, [searchParams]);
+
+    const handlePageChange = (page: number) => {
+        const current = new URLSearchParams(Array.from(searchParams.entries()));
+        current.set('page', page.toString());
+        const search = current.toString();
+        const query = search ? `?${search}` : '';
+        router.push(`${pathname}${query}`);
     };
 
     if (loading) {
@@ -83,6 +110,14 @@ export const CarsContainer = () => {
             </div>
 
             <CarGrid cars={filteredCars} isEditor={isEditorPage && hasEditRights} />
+
+            {pagination.pages > 1 && (
+                <Pagination
+                    currentPage={pagination.currentPage}
+                    totalPages={pagination.pages}
+                    onPageChange={handlePageChange}
+                />
+            )}
         </div>
     );
 };

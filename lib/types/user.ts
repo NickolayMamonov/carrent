@@ -16,13 +16,3 @@ export interface User {
     createdAt: Date;
     updatedAt: Date;
 }
-
-export interface UserProfile {
-    firstName: string;
-    lastName: string;
-    email: string;
-    currentPassword?: string;
-    newPassword?: string;
-}
-
-export interface UserWithoutPassword extends Omit<User, 'password'> {}

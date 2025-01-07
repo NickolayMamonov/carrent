@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useLogout } from '@/hooks/auth/useLogout';
 import Container from "@/components/Container";
@@ -109,9 +110,11 @@ const NavBar = () => {
                 <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full overflow-hidden bg-muted">
                         {user.avatar ? (
-                            <img
+                            <Image
                                 src={user.avatar}
                                 alt={`${user.firstName} ${user.lastName}`}
+                                width={48}
+                                height={48}
                                 className="h-full w-full object-cover"
                             />
                         ) : (
@@ -146,9 +149,11 @@ const NavBar = () => {
             <div className="flex items-center gap-3 px-3 py-2">
                 <div className="h-10 w-10 rounded-full overflow-hidden bg-muted">
                     {user.avatar ? (
-                        <img
+                        <Image
                             src={user.avatar}
                             alt={`${user.firstName} ${user.lastName}`}
+                            width={48}
+                            height={48}
                             className="h-full w-full object-cover"
                         />
                     ) : (

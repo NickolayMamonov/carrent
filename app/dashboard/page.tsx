@@ -1,8 +1,8 @@
-// app/dashboard/page.tsx
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState, useCallback } from 'react';
-import {CarFront, Calendar, User, Info} from 'lucide-react';
+import {CarFront, Calendar, Info} from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { formatPrice } from '@/lib/utils/format';
 
@@ -131,16 +131,18 @@ export default function DashboardPage() {
                             >
                                 <div className="flex flex-col md:flex-row gap-6">
                                     {/* Car Image */}
-                                    <div className="w-full md:w-48 h-32 bg-muted rounded-lg overflow-hidden">
+                                    <div className="w-full md:w-48 h-32 bg-muted rounded-lg overflow-hidden relative">
                                         {booking.car.images[0] ? (
-                                            <img
+                                            <Image
                                                 src={booking.car.images[0]}
                                                 alt={`${booking.car.make} ${booking.car.model}`}
-                                                className="w-full h-full object-cover"
+                                                width={192}
+                                                height={128}
+                                                className="object-cover"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center">
-                                                <CarFront className="h-12 w-12 text-muted-foreground" />
+                                                <CarFront className="h-12 w-12 text-muted-foreground"/>
                                             </div>
                                         )}
                                     </div>

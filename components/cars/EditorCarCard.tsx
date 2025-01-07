@@ -1,11 +1,13 @@
 'use client';
 
+import Image from 'next/image';
 import React from 'react';
 import { Car, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Car as CarType } from '@/lib/types/car';
 import { formatPrice } from '@/lib/utils/format';
 import Link from 'next/link';
+import {router} from "next/client";
 
 interface EditorCarCardProps {
     car: CarType;
@@ -23,7 +25,7 @@ export const EditorCarCard: React.FC<EditorCarCardProps> = ({ car }) => {
             });
 
             if (response.ok) {
-                window.location.reload();
+                router.push('/editor/cars?page=1'); // Добавили page=1 при редиректе
             }
         } catch (error) {
             console.error('Error deleting car:', error);
@@ -34,14 +36,16 @@ export const EditorCarCard: React.FC<EditorCarCardProps> = ({ car }) => {
         <div className="rounded-lg border bg-card overflow-hidden">
             <div className="relative h-48 w-full bg-muted">
                 {car.images[0] ? (
-                    <img
+                    <Image
                         src={car.images[0]}
                         alt={`${car.make} ${car.model}`}
-                        className="object-cover w-full h-full hover:scale-105 transition-transform duration-300"
+                        fill={true}
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                 ) : (
                     <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                        <Car className="h-12 w-12" />
+                        <Car className="h-12 w-12"/>
                     </div>
                 )}
             </div>

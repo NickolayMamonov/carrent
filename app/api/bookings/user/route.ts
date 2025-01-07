@@ -1,4 +1,3 @@
-// app/api/bookings/user/route.ts
 import { getAuthUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
@@ -28,7 +27,7 @@ export async function GET() {
         });
 
         return NextResponse.json({ bookings });
-    } catch (error) {
+    } catch (_error) {
         return NextResponse.json(
             { error: 'Внутренняя ошибка сервера' },
             { status: 500 }

@@ -37,7 +37,7 @@ export async function POST(request: Request, context: RouteContext) {
         });
 
         return NextResponse.json({ booking: updatedBooking });
-    } catch (error) {
+    } catch (_error) {
         return NextResponse.json(
             { error: 'Внутренняя ошибка сервера' },
             { status: 500 }

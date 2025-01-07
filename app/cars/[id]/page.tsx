@@ -1,12 +1,10 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { formatPrice } from '@/lib/utils/format';
-import { Button } from "@/components/ui/button";
-import { Car, Calendar, Info, Fuel, Users } from 'lucide-react';
-import BookingForm from './BookingForm';
-import EditorOrBookingForm from "@/components/cars/EditorOrBookingForm";
+import { Car, Calendar, Fuel, Users } from 'lucide-react';
+import MainBookingForm from "@/components/cars/MainBookingForm";
 
 interface CarDetails {
     id: string;
@@ -75,9 +73,11 @@ export default function CarDetailsPage({ params }: { params: { id: string } }) {
                     {/* Main Image */}
                     <div className="aspect-video bg-muted rounded-lg overflow-hidden">
                         {selectedImage ? (
-                            <img
+                            <Image
                                 src={selectedImage}
                                 alt={`${car.make} ${car.model}`}
+                                width={800}
+                                height={600}
                                 className="w-full h-full object-cover"
                             />
                         ) : (
@@ -98,10 +98,11 @@ export default function CarDetailsPage({ params }: { params: { id: string } }) {
                                     }`}
                                     onClick={() => setSelectedImage(image)}
                                 >
-                                    <img
+                                    <Image
                                         src={image}
                                         alt={`${car.make} ${car.model} view ${index + 1}`}
-                                        className="w-full h-full object-cover"
+                                        fill={true}
+                                        className="object-cover"
                                     />
                                 </button>
                             ))}
@@ -178,7 +179,7 @@ export default function CarDetailsPage({ params }: { params: { id: string } }) {
 
                 {/* Right Column - Booking Form */}
                 <div className="lg:col-span-1">
-                    <EditorOrBookingForm carId={car.id} pricePerDay={car.pricePerDay} />
+                    <MainBookingForm carId={car.id} pricePerDay={car.pricePerDay} />
                 </div>
             </div>
         </div>

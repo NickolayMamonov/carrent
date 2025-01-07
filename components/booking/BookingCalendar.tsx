@@ -3,12 +3,11 @@
 import { useState, useEffect } from 'react';
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from 'react-day-picker';
-import { addDays } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
 interface BookedDates {
-    startDate: Date;
-    endDate: Date;
+    startDate: string;
+    endDate: string;
 }
 
 interface BookingCalendarProps {
@@ -27,10 +26,7 @@ export default function BookingCalendar({ carId, onDateRangeChange }: BookingCal
                 const response = await fetch(`/api/cars/${carId}/booked-dates`);
                 if (response.ok) {
                     const data = await response.json();
-                    setBookedDates(data.bookedDates.map((booking: any) => ({
-                        startDate: new Date(booking.startDate),
-                        endDate: new Date(booking.endDate)
-                    })));
+                    setBookedDates(data.bookedDates);
                 }
             } catch (error) {
                 console.error('Error fetching booked dates:', error);
@@ -46,16 +42,16 @@ export default function BookingCalendar({ carId, onDateRangeChange }: BookingCal
         if (!date) return false;
 
         return bookedDates.some(booking => {
-            const bookingStart = new Date(booking.startDate);
-            const bookingEnd = new Date(booking.endDate);
+            const startDate = new Date(booking.startDate);
+            const endDate = new Date(booking.endDate);
 
             // Устанавливаем время в полночь для корректного сравнения
             const compareDate = new Date(date);
             compareDate.setHours(0, 0, 0, 0);
-            bookingStart.setHours(0, 0, 0, 0);
-            bookingEnd.setHours(0, 0, 0, 0);
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(0, 0, 0, 0);
 
-            return compareDate >= bookingStart && compareDate <= bookingEnd;
+            return compareDate >= startDate && compareDate <= endDate;
         });
     };
 
@@ -77,7 +73,7 @@ export default function BookingCalendar({ carId, onDateRangeChange }: BookingCal
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center">
+            <div className="flex justify-center items-center p-4">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
             </div>
         );
@@ -89,15 +85,17 @@ export default function BookingCalendar({ carId, onDateRangeChange }: BookingCal
             selected={date}
             onSelect={handleSelect}
             locale={ru}
-            disabled={isDateDisabled}
+            disabled={[
+                { before: new Date() }, // Отключаем прошедшие даты
+                { dayOfWeek: [] }, // Добавьте сюда дни недели, если нужно их отключить
+                isDateDisabled // Наша функция для отключения забронированных дат
+            ]}
             defaultMonth={new Date()}
-            fromDate={new Date()}
-            toDate={addDays(new Date(), 365)}
             numberOfMonths={1}
             showOutsideDays={true}
             className="rounded-md border"
             classNames={{
-                day_disabled: "text-muted-foreground opacity-50 line-through",
+                day_disabled: "text-muted-foreground opacity-50 line-through cursor-not-allowed",
             }}
         />
     );

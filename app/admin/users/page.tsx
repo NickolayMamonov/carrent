@@ -1,9 +1,11 @@
 'use client';
 
+import Image from 'next/image';
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { User } from '@/lib/types/user';
 import { Shield, User as UserIcon, Pencil } from 'lucide-react';
+export const dynamic = 'force-dynamic';
 
 export default function AdminUsersPage() {
     const [users, setUsers] = useState<User[]>([]);
@@ -135,10 +137,12 @@ export default function AdminUsersPage() {
                                     <div className="flex items-center gap-3">
                                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                                             {user.avatar ? (
-                                                <img
+                                                <Image
                                                     src={user.avatar}
                                                     alt=""
-                                                    className="h-10 w-10 rounded-full object-cover"
+                                                    width={40}
+                                                    height={40}
+                                                    className="rounded-full object-cover"
                                                 />
                                             ) : (
                                                 <UserIcon className="h-5 w-5 text-primary" />

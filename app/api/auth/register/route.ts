@@ -6,7 +6,6 @@ export async function POST(request: Request) {
     try {
         const { email, password, firstName, lastName } = await request.json();
 
-        // Проверяем существование пользователя
         const existingUser = await prisma.user.findUnique({
             where: { email }
         });
@@ -18,10 +17,8 @@ export async function POST(request: Request) {
             );
         }
 
-        // Хешируем пароль
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Создаем пользователя
         const user = await prisma.user.create({
             data: {
                 email,
@@ -35,11 +32,12 @@ export async function POST(request: Request) {
         const { password: _, ...userWithoutPassword } = user;
 
         return NextResponse.json({ user: userWithoutPassword });
-    } catch (error) {
+    } catch (error: unknown) {
         console.error('Registration error:', error);
         return NextResponse.json(
             { error: 'Ошибка при регистрации' },
             { status: 500 }
         );
     }
+
 }

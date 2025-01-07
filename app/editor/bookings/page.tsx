@@ -1,7 +1,8 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { Car, Calendar, User as UserIcon, Loader2, Check, X, Shield, CreditCard } from 'lucide-react';
+import { Car, Calendar, User as UserIcon, Loader2, Check, X, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/utils/format';
 
@@ -114,10 +115,12 @@ export default function EditorBookingsPage() {
                             <div className="lg:w-1/3">
                                 <div className="aspect-video rounded-lg overflow-hidden bg-muted">
                                     {booking.car.images[0] ? (
-                                        <img
+                                        <Image
                                             src={booking.car.images[0]}
                                             alt={`${booking.car.make} ${booking.car.model}`}
                                             className="w-full h-full object-cover"
+                                            width={192}
+                                            height={128}
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center">
@@ -145,10 +148,12 @@ export default function EditorBookingsPage() {
                                 <div className="flex items-center gap-4">
                                     <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
                                         {booking.user.avatar ? (
-                                            <img
+                                            <Image
                                                 src={booking.user.avatar}
                                                 alt=""
-                                                className="h-12 w-12 rounded-full object-cover"
+                                                width={48}
+                                                height={48}
+                                                className="rounded-full object-cover"
                                             />
                                         ) : (
                                             <UserIcon className="h-6 w-6 text-primary" />

@@ -19,7 +19,8 @@ export async function getAuthUser() {
         });
 
         return user;
-    } catch (error) {
+    } catch (_error) {
+        console.error('Auth error:', _error);
         return null;
     }
 }
@@ -33,11 +34,9 @@ export async function validateAndRefreshToken() {
     }
 
     try {
-        // Проверяем основной токен
         jwt.verify(token, process.env.JWT_SECRET!);
         return token;
-    } catch (error) {
-        // Если основной токен истёк, пробуем обновить через refresh token
+    } catch (_error) {
         try {
             const decoded = jwt.verify(
                 refreshToken,
@@ -80,7 +79,7 @@ export async function validateAndRefreshToken() {
             });
 
             return newToken;
-        } catch {
+        } catch (_error) {
             return null;
         }
     }
