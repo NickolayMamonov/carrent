@@ -1,26 +1,55 @@
+'use client';
+
+import Image from 'next/image';
 import React from 'react';
-import { Car } from "lucide-react";
+import { Car, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Car as CarType } from '@/lib/types/car';
 import { formatPrice } from '@/lib/utils/format';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface CarCardProps {
     car: CarType;
+    isEditor?: boolean;
 }
 
-export const CarCard: React.FC<CarCardProps> = ({ car }) => {
+export default function CarCard({ car, isEditor }: CarCardProps) {
+    const pathname = usePathname();
+    const isEditorPage = pathname.startsWith('/editor');
+
+    const handleDelete = async () => {
+        if (!confirm('Вы уверены, что хотите удалить этот автомобиль?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/editor/cars/${car.id}`, {
+                method: 'DELETE',
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Error deleting car:', error);
+        }
+    };
+
     return (
         <div className="rounded-lg border bg-card overflow-hidden">
             <div className="relative h-48 w-full bg-muted">
-                {car.image ? (
-                    <img
-                        src={car.image}
+                {car.images[0] ? (
+                    <Image
+                        src={car.images[0]}
                         alt={`${car.make} ${car.model}`}
-                        className="object-cover w-full h-full hover:scale-105 transition-transform duration-300"
+                        fill={true}
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                 ) : (
                     <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                        <Car className="h-12 w-12" />
+                        <Car className="h-12 w-12"/>
                     </div>
                 )}
             </div>
@@ -35,20 +64,38 @@ export const CarCard: React.FC<CarCardProps> = ({ car }) => {
                             key={feature}
                             className="px-2 py-1 text-xs rounded-full bg-secondary"
                         >
-              {feature}
-            </span>
+                            {feature}
+                        </span>
                     ))}
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-4">
                     <div>
                         <span className="text-2xl font-bold">{formatPrice(car.pricePerDay)} ₽</span>
                         <span className="text-muted-foreground">/день</span>
                     </div>
-                    <a href={`/cars/${car.id}`}>
+                    <Link href={isEditorPage ? `/editor/cars/${car.id}` : `/cars/${car.id}`}>
                         <Button>Подробнее</Button>
-                    </a>
+                    </Link>
                 </div>
+                {/* Кнопки редактирования для редактора */}
+                {isEditor && isEditorPage && (
+                    <div className="flex gap-2">
+                        <Link href={`/editor/cars/${car.id}`} className="flex-1">
+                            <Button variant="outline" className="w-full flex items-center justify-center gap-2">
+                                <Edit className="h-4 w-4" />
+                                Редактировать
+                            </Button>
+                        </Link>
+                        <Button
+                            variant="destructive"
+                            onClick={handleDelete}
+                            className="px-3"
+                        >
+                            <Trash className="h-4 w-4" />
+                        </Button>
+                    </div>
+                )}
             </div>
         </div>
     );
-};
+}

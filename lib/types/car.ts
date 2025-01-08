@@ -1,3 +1,4 @@
+// lib/types/car.ts
 export interface Car {
     id: string;
     make: string;
@@ -7,13 +8,20 @@ export interface Car {
     type: string;
     features: string[];
     availability: boolean;
-    image: string;
-    description: string;
+    image?: string | null;
+    images: string[];
+    description: string | null;
     specifications: {
-        transmission: string;
-        fuelType: string;
-        seats: number;
-        luggage: number;
-        mileage: string;
-    };
+        id: string;
+        transmission: string | null;
+        fuelType: string | null;
+        seats: number | null;
+        luggage: number | null;
+        mileage: string | null;
+        carId: string;
+    } | null;
+    createdBy: string;
+    lastModifiedBy: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
