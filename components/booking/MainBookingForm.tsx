@@ -201,14 +201,14 @@ const BookingForm = ({ pricePerDay, carId }: BookingFormProps) => {
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
                     </div>
                 ) : (
-                    <div className="border rounded-md p-3">
+                    <div className="flex justify-center border rounded-md p-3">
                         <Calendar
                             mode="range"
                             selected={dateRange}
                             onSelect={setDateRange}
                             locale={ru}
                             disabled={[
-                                { before: new Date() },
+                                {before: new Date()},
                                 ...bookedDates.map(booking => ({
                                     from: booking.startDate,
                                     to: booking.endDate

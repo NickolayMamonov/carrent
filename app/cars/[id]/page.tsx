@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Car, Calendar, Fuel, Users } from 'lucide-react';
-import MainBookingForm from "@/components/cars/MainBookingForm";
+import MainBookingForm from "@/components/booking/MainBookingForm";
 
 interface CarDetails {
     id: string;

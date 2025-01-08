@@ -1,10 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from "@/components/ui/button";
-import { ImageUpload } from '@/components/ImageUpload';
-import { Loader2 } from 'lucide-react';
+
+import React, {useState, useEffect} from 'react';
+import {useRouter} from 'next/navigation';
+import {Button} from "@/components/ui/button";
+import {ImageUpload} from '@/components/ImageUpload';
+import {Loader2} from 'lucide-react';
+
+
+const FUEL_TYPES = ['Бензин', 'Дизель', 'Электрический'] as const;
+const TRANSMISSION_TYPES = ['Автоматическая', 'Механическая', 'Роботизированная'] as const;
+
+type TransmissionType = typeof TRANSMISSION_TYPES[number];
+type FuelType = typeof FUEL_TYPES[number];
 
 interface CarFormData {
     make: string;
@@ -16,8 +24,8 @@ interface CarFormData {
     description: string;
     images: string[];
     specifications: {
-        transmission: string | null;
-        fuelType: string | null;
+        transmission: TransmissionType | null;
+        fuelType: FuelType | null;
         seats: number | null;
         luggage: number | null;
     };
@@ -51,7 +59,7 @@ const initialFormData: CarFormData = {
     }
 };
 
-export default function CarEditorPage({ params }: { params: { id: string } }) {
+export default function CarEditorPage({params}: { params: { id: string } }) {
     const router = useRouter();
     const isNew = params.id === 'new';
     const [formData, setFormData] = useState<CarFormData>(initialFormData);
@@ -97,10 +105,32 @@ export default function CarEditorPage({ params }: { params: { id: string } }) {
         e.preventDefault();
         setSaving(true);
 
+        // Валидация
+        if (!formData.specifications.transmission) {
+            alert('Выберите тип трансмиссии');
+            setSaving(false);
+            return;
+        }
+        if (!formData.specifications.fuelType) {
+            alert('Выберите тип топлива');
+            setSaving(false);
+            return;
+        }
+        if (!formData.specifications.seats || formData.specifications.seats < 1 || formData.specifications.seats > 9) {
+            alert('Укажите корректное количество мест (от 1 до 9)');
+            setSaving(false);
+            return;
+        }
+        if (!formData.specifications.luggage || formData.specifications.luggage < 0) {
+            alert('Укажите корректный объем багажника');
+            setSaving(false);
+            return;
+        }
+
         try {
             const response = await fetch(`/api/editor/cars/${isNew ? '' : params.id}`, {
                 method: isNew ? 'POST' : 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(formData)
             });
 
@@ -121,7 +151,7 @@ export default function CarEditorPage({ params }: { params: { id: string } }) {
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"/>
             </div>
         );
     }
@@ -135,7 +165,7 @@ export default function CarEditorPage({ params }: { params: { id: string } }) {
             <form onSubmit={handleSubmit} className="space-y-6">
                 <ImageUpload
                     images={formData.images}
-                    onChange={(newImages) => setFormData({ ...formData, images: newImages })}
+                    onChange={(newImages) => setFormData({...formData, images: newImages})}
                 />
 
                 <div className="grid gap-6 md:grid-cols-2">
@@ -145,7 +175,7 @@ export default function CarEditorPage({ params }: { params: { id: string } }) {
                             type="text"
                             className="w-full rounded-md border px-3 py-2"
                             value={formData.make}
-                            onChange={(e) => setFormData({ ...formData, make: e.target.value })}
+                            onChange={(e) => setFormData({...formData, make: e.target.value})}
                             required
                         />
                     </div>
@@ -155,7 +185,7 @@ export default function CarEditorPage({ params }: { params: { id: string } }) {
                             type="text"
                             className="w-full rounded-md border px-3 py-2"
                             value={formData.model}
-                            onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                            onChange={(e) => setFormData({...formData, model: e.target.value})}
                             required
                         />
                     </div>
@@ -165,7 +195,7 @@ export default function CarEditorPage({ params }: { params: { id: string } }) {
                             type="number"
                             className="w-full rounded-md border px-3 py-2"
                             value={formData.year}
-                            onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) })}
+                            onChange={(e) => setFormData({...formData, year: parseInt(e.target.value)})}
                             required
                             min="1900"
                             max={new Date().getFullYear() + 1}
@@ -176,7 +206,7 @@ export default function CarEditorPage({ params }: { params: { id: string } }) {
                         <select
                             className="w-full rounded-md border px-3 py-2"
                             value={formData.type}
-                            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                            onChange={(e) => setFormData({...formData, type: e.target.value})}
                             required
                         >
                             {carTypes.map((type) => (
@@ -191,10 +221,27 @@ export default function CarEditorPage({ params }: { params: { id: string } }) {
                     <input
                         type="number"
                         className="w-full rounded-md border px-3 py-2"
-                        value={formData.pricePerDay}
-                        onChange={(e) => setFormData({ ...formData, pricePerDay: parseInt(e.target.value) })}
+                        value={formData.pricePerDay || ''}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            // Проверяем, что введено только число и оно не начинается с 0
+                            if (value === '' || (/^\d+$/.test(value) && !/^0\d+$/.test(value))) {
+                                const numValue = value ? parseInt(value) : 0;
+                                setFormData({
+                                    ...formData,
+                                    pricePerDay: numValue
+                                });
+                            }
+                        }}
+                        // Предотвращаем ввод 'e' и других нечисловых символов
+                        onKeyDown={(e) => {
+                            if (e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '-' || e.key === '.') {
+                                e.preventDefault();
+                            }
+                        }}
+                        min="1"
+                        max="1000000"
                         required
-                        min="0"
                     />
                 </div>
 
@@ -203,7 +250,7 @@ export default function CarEditorPage({ params }: { params: { id: string } }) {
                     <textarea
                         className="w-full rounded-md border px-3 py-2 h-32"
                         value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        onChange={(e) => setFormData({...formData, description: e.target.value})}
                     />
                 </div>
 
@@ -229,27 +276,51 @@ export default function CarEditorPage({ params }: { params: { id: string } }) {
                     <div className="grid gap-4 md:grid-cols-2">
                         <div>
                             <label className="block text-sm font-medium mb-2">Трансмиссия</label>
-                            <input
-                                type="text"
+                            <select
                                 className="w-full rounded-md border px-3 py-2"
                                 value={formData.specifications.transmission || ''}
-                                onChange={(e) => setFormData({
-                                    ...formData,
-                                    specifications: { ...formData.specifications, transmission: e.target.value }
-                                })}
-                            />
+                                onChange={(e) => {
+                                    const value = e.target.value as TransmissionType | '';
+                                    setFormData({
+                                        ...formData,
+                                        specifications: {
+                                            ...formData.specifications,
+                                            transmission: value || null
+                                        }
+                                    });
+                                }}
+                            >
+                                <option value="">Выберите тип трансмиссии</option>
+                                {TRANSMISSION_TYPES.map((type) => (
+                                    <option key={type} value={type}>
+                                        {type}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-2">Тип топлива</label>
-                            <input
-                                type="text"
+                            <select
                                 className="w-full rounded-md border px-3 py-2"
                                 value={formData.specifications.fuelType || ''}
-                                onChange={(e) => setFormData({
-                                    ...formData,
-                                    specifications: { ...formData.specifications, fuelType: e.target.value }
-                                })}
-                            />
+                                onChange={(e) => {
+                                    const value = e.target.value as FuelType | '';
+                                    setFormData({
+                                        ...formData,
+                                        specifications: {
+                                            ...formData.specifications,
+                                            fuelType: value || null
+                                        }
+                                    });
+                                }}
+                            >
+                                <option value="">Выберите тип топлива</option>
+                                {FUEL_TYPES.map((type) => (
+                                    <option key={type} value={type}>
+                                        {type}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-2">Количество мест</label>
@@ -257,11 +328,31 @@ export default function CarEditorPage({ params }: { params: { id: string } }) {
                                 type="number"
                                 className="w-full rounded-md border px-3 py-2"
                                 value={formData.specifications.seats || ''}
-                                onChange={(e) => setFormData({
-                                    ...formData,
-                                    specifications: { ...formData.specifications, seats: parseInt(e.target.value) }
-                                })}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    // Проверяем, что введено только число
+                                    if (value === '' || /^\d+$/.test(value)) {
+                                        const numValue = value ? parseInt(value) : null;
+                                        // Дополнительная проверка на диапазон значений
+                                        if (!numValue || (numValue >= 1 && numValue <= 9)) {
+                                            setFormData({
+                                                ...formData,
+                                                specifications: {
+                                                    ...formData.specifications,
+                                                    seats: numValue
+                                                }
+                                            });
+                                        }
+                                    }
+                                }}
+                                // Предотвращаем ввод 'e' и других нечисловых символов
+                                onKeyDown={(e) => {
+                                    if (e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '-' || e.key === '.') {
+                                        e.preventDefault();
+                                    }
+                                }}
                                 min="1"
+                                max="9"
                             />
                         </div>
                         <div>
@@ -270,11 +361,25 @@ export default function CarEditorPage({ params }: { params: { id: string } }) {
                                 type="number"
                                 className="w-full rounded-md border px-3 py-2"
                                 value={formData.specifications.luggage || ''}
-                                onChange={(e) => setFormData({
-                                    ...formData,
-                                    specifications: { ...formData.specifications, luggage: parseInt(e.target.value) }
-                                })}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    // Проверяем, что введено только число
+                                    if (value === '' || /^\d+$/.test(value)) {
+                                        setFormData({
+                                            ...formData,
+                                            specifications: {
+                                                ...formData.specifications,
+                                                luggage: value ? parseInt(value) : null
+                                            }
+                                        });
+                                    }
+                                }}
                                 min="0"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '-' || e.key === '.') {
+                                        e.preventDefault();
+                                    }
+                                }}
                             />
                         </div>
                     </div>
@@ -293,7 +398,7 @@ export default function CarEditorPage({ params }: { params: { id: string } }) {
                         disabled={saving}
                         className="gap-2"
                     >
-                        {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                        {saving && <Loader2 className="h-4 w-4 animate-spin"/>}
                         {saving ? 'Сохранение...' : 'Сохранить'}
                     </Button>
                 </div>
