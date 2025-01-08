@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useState, useCallback } from 'react';
+import {useEffect, useState, useCallback, useRef} from 'react';
 import {CarFront, Calendar, Info} from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { formatPrice } from '@/lib/utils/format';
@@ -38,6 +38,7 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [cancelLoading, setCancelLoading] = useState<string | null>(null);
+    const firstRender = useRef(true);
 
     const fetchBookings = useCallback(async () => {
         try {
@@ -54,9 +55,14 @@ export default function DashboardPage() {
         }
     }, []);
 
+
+
     useEffect(() => {
-        fetchBookings();
-    }, [fetchBookings]);
+        if (firstRender.current) {
+            fetchBookings();
+            firstRender.current = false;
+        }
+    }, []);
 
     const handleCancelBooking = async (bookingId: string) => {
         if (!confirm('Вы уверены, что хотите отменить бронирование?')) {

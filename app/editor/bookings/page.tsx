@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import {useState, useEffect, useRef} from 'react';
 import { Car, Calendar, User as UserIcon, Loader2, Check, X, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/utils/format';
@@ -45,11 +45,14 @@ export default function EditorBookingsPage() {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
+    const firstRender = useRef(true);
 
     useEffect(() => {
-        fetchBookings();
+        if (firstRender.current) {
+            fetchBookings();
+            firstRender.current = false;
+        }
     }, []);
-
     const fetchBookings = async () => {
         try {
             const response = await fetch('/api/editor/bookings');

@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import { Button } from "@/components/ui/button";
 import { User } from '@/lib/types/user';
 import { Shield, User as UserIcon, Pencil } from 'lucide-react';
@@ -13,9 +13,13 @@ export default function AdminUsersPage() {
     const [editingUser, setEditingUser] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+    const firstRender = useRef(true);
 
     useEffect(() => {
-        fetchUsers();
+        if (firstRender.current) {
+            fetchUsers();
+            firstRender.current = false;
+        }
     }, []);
 
     const fetchUsers = async () => {
